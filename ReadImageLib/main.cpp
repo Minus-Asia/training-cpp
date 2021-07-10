@@ -3,7 +3,6 @@
 
 int main(int argc, char *argv[])
 {
-    std::cout << "ABC\n";
     ReadImage readImg;
     readImg.Read_Image();
     return 0;
