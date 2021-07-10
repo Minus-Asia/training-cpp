@@ -1,0 +1,8 @@
+/home/asgard/Asgard/training-cpp/ReadImageLib/build/CMakeFiles/install/strip.dir
+/home/asgard/Asgard/training-cpp/ReadImageLib/build/CMakeFiles/install/local.dir
+/home/asgard/Asgard/training-cpp/ReadImageLib/build/CMakeFiles/install.dir
+/home/asgard/Asgard/training-cpp/ReadImageLib/build/CMakeFiles/list_install_components.dir
+/home/asgard/Asgard/training-cpp/ReadImageLib/build/CMakeFiles/rebuild_cache.dir
+/home/asgard/Asgard/training-cpp/ReadImageLib/build/CMakeFiles/edit_cache.dir
+/home/asgard/Asgard/training-cpp/ReadImageLib/build/CMakeFiles/ReadImageExec.dir
+/home/asgard/Asgard/training-cpp/ReadImageLib/build/CMakeFiles/ReadImageLib.dir
