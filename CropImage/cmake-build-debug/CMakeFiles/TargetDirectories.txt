@@ -1,0 +1,3 @@
+/home/asgard/Asgard/training-cpp/CropImage/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/asgard/Asgard/training-cpp/CropImage/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/asgard/Asgard/training-cpp/CropImage/cmake-build-debug/CMakeFiles/CropImageFromContour.dir
