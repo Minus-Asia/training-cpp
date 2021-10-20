@@ -1,9 +1,16 @@
+from model import TinySSD, calc_loss
+from d2l import torch as d2l
+import torch
 
+device = "cuda:0"
+num_epochs = 30
+net = TinySSD(num_classes=1)
 
-num_epochs = 10
-
-
+batch_size = 32
+train_iter, _ = d2l.load_data_bananas(batch_size)
+trainer = torch.optim.SGD(net.parameters(), lr=0.2, weight_decay=5e-4)
 net = net.to(device)
+
 for epoch in range(num_epochs):
     # Sum of training accuracy, no. of examples in sum of training accuracy,
     # Sum of absolute error, no. of examples in sum of absolute error
