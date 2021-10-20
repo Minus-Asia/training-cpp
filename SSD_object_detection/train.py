@@ -26,6 +26,7 @@ for epoch in range(num_epochs):
         anchors, cls_preds, bbox_preds = net(X)
         # Label the classes and offsets of these anchor boxes
         # bbox_labels: [32, 21776], bbox_masks: [32, 21776], cls_labels: [32, 5444]
+        # Label anchor boxes using ground-truth bounding boxes for loss calculation
         bbox_labels, bbox_masks, cls_labels = d2l.multibox_target(anchors, Y)
         # Calculate the loss function using the predicted and labeled values
         # of the classes and offsets

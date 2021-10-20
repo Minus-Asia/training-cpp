@@ -86,6 +86,7 @@ class TinySSD(nn.Module):
         # cls_preds: [[32, 8, 32, 32], [32, 8, 16, 16], [32, 8, 8, 8], [32, 8, 4, 4], [32, 8, 1, 1]]
 
         Y = self.blk_0(X)
+        # Generate anchor boxes with different shapes centered on each pixel
         anchors[0] = d2l.multibox_prior(Y, sizes=sizes[0], ratios=ratios[0])
         cls_preds[0] = self.cls_0(Y)
         bbox_preds[0] = self.bbox_0(Y)

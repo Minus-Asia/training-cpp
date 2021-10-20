@@ -21,6 +21,7 @@ def predict(X):
     net.eval()
     anchors, cls_preds, bbox_preds = net(X.to(device))
     cls_probs = F.softmax(cls_preds, dim=2).permute(0, 2, 1)
+    # Predict bounding boxes on classification probability and box prediction using NMS
     output = d2l.multibox_detection(cls_probs, bbox_preds, anchors)
     idx = [i for i, row in enumerate(output[0]) if row[0] != -1]
     return output[0, idx]
