@@ -6,13 +6,13 @@ from dataset import Dataset
 from model import get_model, criterion
 
 num_epochs = 10
-data_dir = "data"
+data_dir = "data1"
 input_size = 112
 num_classes = len(os.listdir(data_dir))
 model = get_model(num_classes)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 model.to(device)
-dataset = Dataset(data_dir, data_dir, input_size, 16)
+dataset = Dataset(data_dir, input_size, 32)
 dataloaders = dataset.dataLoaders
 trainer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=1)
 

@@ -4,9 +4,8 @@ from torchvision import datasets, transforms
 
 
 class Dataset:
-    def __init__(self, data_dir, out_dir, input_size, batch_size=8, rate=80):
+    def __init__(self, data_dir, input_size, batch_size=8, rate=80):
         self.data_dir = data_dir
-        self.out_dir = out_dir
         self.input_size = input_size
         self.rate = rate
         self.batch_size = batch_size

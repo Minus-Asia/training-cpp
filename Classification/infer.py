@@ -21,7 +21,7 @@ class infer(object):
                          transforms.Resize((112, 112)),
                          transforms.ToTensor(),
                          self.normalize])
-        self.classes = ["1", "2"]
+        self.classes = ["0", "1"]
 
     def predict(self, img):
         inputs = self.transform(img).float()
@@ -33,7 +33,7 @@ class infer(object):
         return self.classes[int(preds[0])]
 
 if __name__ == "__main__":
-    img = Image.open("/home/zsv/PycharmProjects/training-cpp/Classification/data/val/cox_dome_tele035/Image_20211211171633814.bmp").convert('RGB')
+    img = Image.open("/home/zsv/PycharmProjects/training-cpp/Classification/data1/val/defect/1640264799.437616.png").convert('RGB')
     predict = infer()
     start = time()
     print(predict.predict(img))
