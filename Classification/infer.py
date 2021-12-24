@@ -31,13 +31,15 @@ class Predictor(object):
         inputs = inputs.to(self.device)
         outputs = self.model_ft(inputs)
         outputs = torch.softmax(outputs, dim=1)
-        print(outputs)
         _, preds = torch.max(outputs, 1)
-        return self.classes[int(preds[0])]
+        outputs = outputs.tolist()
+        index = int(preds[0])
+        result = {"label": self.classes[index], "score": outputs[0][index]}
+        return result
 
 
 if __name__ == "__main__":
-    img_path = "/home/zsv/PycharmProjects/training-cpp/Classification/data1/val/defect/1640264910.736863.png"
+    img_path = "/home/zsv/PycharmProjects/training-cpp/Classification/data1/val/good/1640264907.52767.png"
     # img = Image.open(img_path).convert('RGB')
     img = cv2.imread(img_path)
     predict = Predictor(model_path="label_defective_region.pth")
