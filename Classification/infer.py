@@ -40,7 +40,7 @@ if __name__ == "__main__":
     img_path = "/home/zsv/PycharmProjects/training-cpp/Classification/data1/val/defect/1640264910.736863.png"
     # img = Image.open(img_path).convert('RGB')
     img = cv2.imread(img_path)
-    predict = Predictor()
+    predict = Predictor(model_path="label_defective_region.pth")
     start = time()
     print(predict.label_defective_region(img))
     print(time() - start)
