@@ -1,7 +1,8 @@
 import torch
 import cv2
+import glob
 import torch.nn as nn
-from time import time
+import time
 from PIL import Image
 from torchvision import models, transforms
 
@@ -39,10 +40,10 @@ class Predictor(object):
 
 
 if __name__ == "__main__":
-    img_path = "/home/zsv/PycharmProjects/training-cpp/Classification/data1/train/good/1640265077.6384468.png"
     # img = Image.open(img_path).convert('RGB')
-    img = cv2.imread(img_path)
     predict = Predictor(model_path="label_defective_region.pth")
-    start = time()
-    print(predict.label_defective_region(img))
-    print(time() - start)
+    for img_path in glob.glob("/home/zsv/PycharmProjects/training-cpp/Classification/data1/val/good/*.png"):
+        img = cv2.imread(img_path)
+        start = time.time()
+        print(predict.label_defective_region(img))
+        print(time.time() - start)

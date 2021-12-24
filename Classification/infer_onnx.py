@@ -1,12 +1,16 @@
 import time
 import cv2
+import glob
 import numpy as np
 from sklearn.utils.extmath import softmax
+import onnxruntime as ort
 
 
 class Predictor(object):
     def __init__(self, model_path="model.pth"):
-        self.model = cv2.dnn.readNetFromONNX(model_path)
+        providers = [('CUDAExecutionProvider', {'device_id': 0})]
+        self.sess = ort.InferenceSession(model_path, providers=providers)
+        # self.model = cv2.dnn.readNetFromONNX(model_path)
         self.classes = ["defect", "good"]
 
     def label_defective_region(self, img):
@@ -20,20 +24,18 @@ class Predictor(object):
             crop=False
         )
         input_blob[0] /= np.asarray([0.229, 0.224, 0.225], dtype=np.float32).reshape(3, 1, 1)
-        self.model.setInput(input_blob)
-        # OpenCV DNN inference
-        outputs = self.model.forward()
-        outputs = softmax(outputs)
+        outputs = self.sess.run(None, {'input': input_blob})
+        outputs = softmax(outputs[0])
         index = np.argmax(outputs)
         result = {"label": self.classes[index], "score": outputs[0][index]}
         return result
 
 
 if __name__ == "__main__":
-    img_path = "/home/zsv/PycharmProjects/training-cpp/Classification/data1/train/good/1640265077.6384468.png"
     # img = Image.open(img_path).convert('RGB')
-    img = cv2.imread(img_path)
     predict = Predictor(model_path="label_defective_region.onnx")
-    start = time.time()
-    print(predict.label_defective_region(img))
-    print(time.time() - start)
+    for img_path in glob.glob("/home/zsv/PycharmProjects/training-cpp/Classification/data1/val/good/*.png"):
+        img = cv2.imread(img_path)
+        start = time.time()
+        print(predict.label_defective_region(img))
+        print(time.time() - start)
