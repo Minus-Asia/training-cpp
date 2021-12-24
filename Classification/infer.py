@@ -39,7 +39,7 @@ class Predictor(object):
 
 
 if __name__ == "__main__":
-    img_path = "/home/zsv/PycharmProjects/training-cpp/Classification/data1/val/good/1640264907.52767.png"
+    img_path = "/home/zsv/PycharmProjects/training-cpp/Classification/data1/train/good/1640265077.6384468.png"
     # img = Image.open(img_path).convert('RGB')
     img = cv2.imread(img_path)
     predict = Predictor(model_path="label_defective_region.pth")
