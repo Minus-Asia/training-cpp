@@ -1,4 +1,5 @@
 import torch
+import cv2
 import torch.nn as nn
 from time import time
 from PIL import Image
@@ -27,14 +28,18 @@ class infer(object):
         inputs = inputs.unsqueeze(0)
         inputs = inputs.to(self.device)
         outputs = self.model_ft(inputs)
+        outputs = torch.softmax(outputs, dim=1)
         print(outputs)
         _, preds = torch.max(outputs, 1)
         return self.classes[int(preds[0])]
 
 
 if __name__ == "__main__":
-    img = Image.open(
-        "/home/zsv/PycharmProjects/training-cpp/Classification/data1/val/defect/1640264927.0341637.png").convert('RGB')
+    img_path = "/home/zsv/PycharmProjects/training-cpp/Classification/data1/val/good/1640265257.7239678.png"
+    # img = Image.open(img_path).convert('RGB')
+    img = cv2.imread(img_path)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = Image.fromarray(img)
     predict = infer()
     start = time()
     print(predict.predict(img))
