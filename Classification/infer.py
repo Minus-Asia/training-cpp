@@ -6,7 +6,7 @@ from PIL import Image
 from torchvision import models, transforms
 
 
-class infer(object):
+class Predictor(object):
     def __init__(self, model_path="model.pth", num_classes=2):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print(self.device)
@@ -23,7 +23,7 @@ class infer(object):
             self.normalize])
         self.classes = ["defect", "good"]
 
-    def predict(self, img):
+    def label_defective_region(self, img):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img = Image.fromarray(img)
         inputs = self.transform(img).float()
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     img_path = "/home/zsv/PycharmProjects/training-cpp/Classification/data1/val/defect/1640264910.736863.png"
     # img = Image.open(img_path).convert('RGB')
     img = cv2.imread(img_path)
-    predict = infer()
+    predict = Predictor()
     start = time()
-    print(predict.predict(img))
+    print(predict.label_defective_region(img))
     print(time() - start)
