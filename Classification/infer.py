@@ -21,9 +21,11 @@ class infer(object):
             transforms.Resize((112, 112)),
             transforms.ToTensor(),
             self.normalize])
-        self.classes = ["0", "1"]
+        self.classes = ["defect", "good"]
 
     def predict(self, img):
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = Image.fromarray(img)
         inputs = self.transform(img).float()
         inputs = inputs.unsqueeze(0)
         inputs = inputs.to(self.device)
@@ -35,11 +37,9 @@ class infer(object):
 
 
 if __name__ == "__main__":
-    img_path = "/home/zsv/PycharmProjects/training-cpp/Classification/data1/val/good/1640265257.7239678.png"
+    img_path = "/home/zsv/PycharmProjects/training-cpp/Classification/data1/val/defect/1640264910.736863.png"
     # img = Image.open(img_path).convert('RGB')
     img = cv2.imread(img_path)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    img = Image.fromarray(img)
     predict = infer()
     start = time()
     print(predict.predict(img))
