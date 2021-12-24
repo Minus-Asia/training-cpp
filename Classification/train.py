@@ -95,4 +95,4 @@ for epoch in range(num_epochs):
     # load best model weights
     model.load_state_dict(best_model_wts)
 
-torch.save(model.state_dict(), "model.pth")
+torch.save(model.state_dict(), "label_defective_region.pth")
