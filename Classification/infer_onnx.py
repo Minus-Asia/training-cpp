@@ -14,7 +14,6 @@ class Predictor(object):
         self.classes = ["defect", "good"]
 
     def label_defective_region(self, img_list):
-        results = []
         input_blobs = cv2.dnn.blobFromImages(
             images=img_list,
             scalefactor=1 / 255.0,
@@ -26,20 +25,21 @@ class Predictor(object):
         input_blobs /= np.asarray([0.229, 0.224, 0.225], dtype=np.float32).reshape(3, 1, 1)
         outputs = self.sess.run(None, {'input': input_blobs})
         outputs = softmax(outputs[0])
-        index = np.argmax(outputs)
-        result = {"label": self.classes[index], "score": outputs[0][index]}
-        return result
+        indexes = np.argmax(outputs, axis=1)
+        results = [{"label": self.classes[indexes[i]], "score": outputs[i][indexes[i]]} for i in range(len(img_list))]
+        return results
 
 
 if __name__ == "__main__":
     # img = Image.open(img_path).convert('RGB')
-    predict = Predictor(model_path="/home/asgard/Minus/label_defective_region.onnx")
+    predict = Predictor(model_path="label_defective_region.onnx")
     img_list = []
-    for img_path in glob.glob("/home/asgard/Minus/Documents/data1/val/good/*.png"):
+    for img_path in glob.glob("/home/zsv/PycharmProjects/training-cpp/Classification/data1/val/good/*.png"):
         img = cv2.imread(img_path)
         img = img.astype(np.float32)
         img_list.append(img)
 
-    start = time.time()
-    print(predict.label_defective_region(img_list))
-    print(time.time() - start)
+    for i in range(100):
+        start = time.time()
+        print(predict.label_defective_region(img_list))
+        print(time.time() - start)
