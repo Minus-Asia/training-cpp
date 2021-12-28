@@ -34,7 +34,7 @@ if __name__ == "__main__":
     # img = Image.open(img_path).convert('RGB')
     predict = Predictor(model_path="label_defective_region.onnx")
     img_list = []
-    for img_path in glob.glob("/home/zsv/PycharmProjects/training-cpp/Classification/data1/val/good/*.png"):
+    for img_path in glob.glob("/mnt/Datasets/YB_2812/bad_defective_region1/*.png"):
         img = cv2.imread(img_path)
         img = img.astype(np.float32)
         img_list.append(img)

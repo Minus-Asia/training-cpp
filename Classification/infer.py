@@ -5,21 +5,21 @@ import torch.nn as nn
 import time
 from PIL import Image
 from torchvision import models, transforms
+from model import get_model
 
 
 class Predictor(object):
     def __init__(self, model_path="model.pth", num_classes=2):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print(self.device)
-        self.model_ft = models.resnet18(pretrained=False)
-        self.model_ft.fc = nn.Linear(self.model_ft.fc.in_features, num_classes)
+        self.model_ft = get_model(num_classes)
         self.model_ft.load_state_dict(torch.load(model_path))
         self.model_ft.eval()
         self.model_ft.to(self.device)
         self.normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                               std=[0.229, 0.224, 0.225])
         self.transform = transforms.Compose([
-            transforms.Resize((112, 112)),
+            transforms.Resize((96, 96)),
             transforms.ToTensor(),
             self.normalize])
         self.classes = ["defect", "good"]
@@ -41,9 +41,20 @@ class Predictor(object):
 
 if __name__ == "__main__":
     # img = Image.open(img_path).convert('RGB')
-    predict = Predictor(model_path="label_defective_region.pth")
-    for img_path in glob.glob("/home/zsv/PycharmProjects/training-cpp/Classification/data1/val/good/*.png"):
+    predict = Predictor(model_path="./label_defective_region.pth")
+    lst_img = glob.glob("/mnt/Datasets/YB_2812/bad_defective_region1/*.png")
+    num_images = len(lst_img)
+    count_incorrect = 0
+    for img_path in lst_img:
         img = cv2.imread(img_path)
         start = time.time()
-        print(predict.label_defective_region(img))
+        res = predict.label_defective_region(img)
+        print(res)
+        if res["label"] == "good" and res["score"] > 0.9:
+            count_incorrect += 1
+            cv2.imshow("image", img)
+            cv2.waitKey(0)
+
         print(time.time() - start)
+
+    print("Total: ", count_incorrect / num_images)

@@ -1,10 +1,8 @@
 import torch
-import torch.nn as nn
-from torchvision import models
 
+from model import get_model
 
-model_ft = models.resnet18(pretrained=False)
-model_ft.fc = nn.Linear(model_ft.fc.in_features, 2)
+model_ft = get_model(2)
 model_ft.load_state_dict(torch.load("label_defective_region.pth"))
 model_ft.eval()
 
