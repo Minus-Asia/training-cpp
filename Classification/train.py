@@ -6,7 +6,7 @@ from model import get_model, criterion
 from sklearn.metrics import confusion_matrix
 
 num_epochs = 100
-data_dir = "/mnt/Datasets/YB_2812"
+data_dir = "/home/zsv/Documents/train_data_2812"
 input_size = 96
 batch_sz = 64
 num_classes = 2

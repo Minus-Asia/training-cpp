@@ -10,7 +10,7 @@ x = torch.randn(1, 3, 112, 112, requires_grad=True)
 torch_out = model_ft(x)
 torch.onnx.export(model_ft,  # model being run
                   x,  # model input (or a tuple for multiple inputs)
-                  "label_defective_region.onnx",  # where to save the model (can be a file or file-like object)
+                  "blabel_defective_region.onnx",  # where to save the model (can be a file or file-like object)
                   export_params=True,  # store the trained parameter weights inside the model file
                   opset_version=11,  # the ONNX version to export the model to
                   do_constant_folding=True,  # whether to execute constant folding for optimization
