@@ -16,11 +16,12 @@ model.to(device)
 
 data_transforms = {
     'train': transforms.Compose([
-        transforms.Resize((input_size, input_size)),
+        transforms.ColorJitter(brightness=[0.9, 1.1]),
         transforms.RandomHorizontalFlip(p=0.5),
         transforms.RandomVerticalFlip(p=0.5),
         transforms.RandomAdjustSharpness(sharpness_factor=2.),
-        transforms.RandomAutocontrast(),
+        transforms.RandomAutocontrast(p=0.5),
+        transforms.Resize((input_size, input_size)),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ]),
