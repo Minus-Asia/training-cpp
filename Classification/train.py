@@ -1,150 +1,115 @@
-import torch
-import torch.optim as optim
-import torch.nn as nn
-import torch.nn.functional as F
-import torchvision
-import torchvision.transforms as transforms
-from torch.utils.data import Dataset
-import pandas as pd
-from model import Net
 import os
-import csv
-from skimage import io
+import copy
+import torch
+from torchvision import datasets, transforms
+from model import get_model, criterion
+from sklearn.metrics import confusion_matrix
 
-import matplotlib.pyplot as plt
-import numpy as np
+num_epochs = 100
+data_dir = "/home/zsv/Documents/train_data_2812"
+input_size = 96
+batch_sz = 64
+num_classes = 2
+model = get_model(num_classes)
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+model.to(device)
 
+data_transforms = {
+    'train': transforms.Compose([
+        transforms.ColorJitter(brightness=[0.9, 1.1]),
+        transforms.RandomHorizontalFlip(p=0.5),
+        transforms.RandomVerticalFlip(p=0.5),
+        transforms.RandomAdjustSharpness(sharpness_factor=2.),
+        transforms.RandomAutocontrast(p=0.5),
+        transforms.Resize((input_size, input_size)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ]),
+    'val': transforms.Compose([
+        transforms.Resize((input_size, input_size)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ]),
+}
+image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
+                                          data_transforms[x])
+                  for x in ['train', 'val']}
+dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=batch_sz,
+                                              shuffle=(True if x == "train" else False),
+                                              num_workers=4)
+               for x in ['train', 'val']}
+dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
 
-class DatasetCreation(Dataset):
-    def __init__(self, data_infos_file, transform=None):
-        self.annotations = pd.read_csv(data_infos_file)
-        self.transform = transform
+optimizer = torch.optim.SGD(
+    model.parameters(),
+    lr=0.001,
+    momentum=0.9,
+    weight_decay=5e-4)
 
-    def __len__(self):
-        return len(self.annotations)
+scheduler = torch.optim.lr_scheduler.StepLR(
+    optimizer,
+    step_size=dataset_sizes["train"] // batch_sz * 20,
+    gamma=0.1)
 
-    def __getitem__(self, index):
-        image = io.imread(self.annotations.iloc[index, 0])
-        label = torch.tensor(int(self.annotations.iloc[index, 1]))
+# for epoch in range(num_epochs):
+best_model_wts = copy.deepcopy(model.state_dict())
+best_acc = 0.0
 
-        if self.transform:
-            image = self.transform(image)
+for epoch in range(num_epochs):
+    print('Epoch {}/{}'.format(epoch, num_epochs - 1))
+    print('-' * 10)
 
-        return image, label
+    # Each epoch has a training and validation phase
+    for phase in ['train', 'val']:
+        if phase == 'train':
+            model.train()  # Set model to training mode
+        else:
+            model.eval()  # Set model to evaluate mode
 
+        running_loss = 0.0
+        running_corrects = 0
 
-train_path = "/media/sf_ShareFolder2/toothbrush/train/"
-test_path = "/media/sf_ShareFolder2/toothbrush/test/"
+        # Iterate over data.
+        for inputs, labels in dataloaders[phase]:
+            inputs = inputs.to(device)
+            labels = labels.to(device)
 
-# create training infos for all train data
-def create_train_infos(dir_name, filename):
-    sub_dirs = []
-    for file in os.listdir(dir_name):
-        if os.path.isdir(os.path.join(dir_name, file)):
-            sub_dirs.append(os.path.join(dir_name, file))
+            # zero the parameter gradients
+            optimizer.zero_grad()
 
-    with open(train_path + filename, 'w') as file:
-        writer = csv.writer(file)
-        for sub_dir in sub_dirs:
-            for image in os.listdir(sub_dir):
-                if image.endswith(".png"):
-                    img_path = sub_dir + "/" + image
-                    data = [img_path, sub_dirs.index(sub_dir)]
-                    writer.writerow(data)
+            # forward
+            # track history if only in train
+            with torch.set_grad_enabled(phase == 'train'):
+                outputs = model(inputs)
+                _, preds = torch.max(outputs, 1)
+                loss = criterion(outputs, labels)
 
+                # backward + optimize only if in training phase
+                if phase == 'train':
+                    loss.backward()
+                    optimizer.step()
 
-create_train_infos(train_path, "train_infos.csv")
-create_train_infos(test_path, "test_infos.csv")
-# Load training set
-batch_size = 4
-transform = transforms.Compose(
-    [transforms.ToPILImage(),
-     transforms.Resize(256),
-     transforms.ToTensor(),
-     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+            # statistics
+            running_loss += loss.item() * inputs.size(0)
+            running_corrects += torch.sum(preds == labels.data)
+        if phase == 'train':
+            scheduler.step()
 
-data_set = DatasetCreation(data_infos_file=train_path + "train_infos.csv", transform=transform)
-data_set_test = DatasetCreation(data_infos_file=train_path + "test_infos.csv", transform=transform)
+        epoch_loss = running_loss / dataset_sizes[phase]
+        epoch_acc = running_corrects.double() / dataset_sizes[phase]
 
-trainloader = torch.utils.data.DataLoader(data_set, batch_size=batch_size, shuffle=True, num_workers=4)
-testloader = torch.utils.data.DataLoader(data_set_test, batch_size=1, shuffle=True, num_workers=4)
+        print('{} Loss: {:.4f} Acc: {:.4f}'.format(
+            phase, epoch_loss, epoch_acc))
 
+        # deep copy the model
+        if phase == 'val' and epoch_acc > best_acc:
+            best_acc = epoch_acc
+            best_model_wts = copy.deepcopy(model.state_dict())
+            # torch.save(model.state_dict(), "label_defective_region.pth")
 
-def imshow(img):
-    img = img / 2 + 0.5  # unnormalize
-    npimg = img.numpy()
-    plt.imshow(np.transpose(npimg, (1, 2, 0)))
-    plt.show()
+print('Best val Acc: {:4f}'.format(best_acc))
 
+# load best model weights
+model.load_state_dict(best_model_wts)
 
-dataiter = iter(trainloader)
-images, labels = dataiter.next()
-
-# show images
-imshow(torchvision.utils.make_grid(images))
-
-# create a CNN model
-net = Net()
-# define loss function
-# Let's use a Classification Cross-Entropy loss and SGD with momentum.
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
-
-# Train the network
-for epoch in range(30):  # loop over the dataset multiple times
-    running_loss = 0.0
-    for i, data in enumerate(trainloader, 0):
-        # get the inputs; data is a list of [inputs, labels]
-        inputs, labels = data
-        # print("This is inputs size:", inputs.size())
-        # label has size [4]
-        # print("This is labels size:", labels.size())
-        # Sets the gradients of all optimized torch.Tensors to zero.
-        optimizer.zero_grad()
-
-        # forward + backward + optimize
-        outputs = net(inputs)
-        # output: [4, 10], labels: [4]
-        # output describe the probability of being each class from 10 classes on cifa-10
-        loss = criterion(outputs, labels)
-        # calculate derivative of each layer using chain rule
-        loss.backward()
-        # update weights
-        optimizer.step()
-
-        # print statistics
-        running_loss += loss.item()
-        if i % 5 == 4:  # print every 2000 mini-batches
-            print('[%d, %5d] loss: %.3f' %
-                  (epoch + 1, i + 1, running_loss / 5))
-            running_loss = 0.0
-
-print('Finished Training')
-
-# save model
-torch.save(net.state_dict(), './model.pth')
-
-############################
-
-# def classify(image_input):
-#     output = net(image_input)
-#     _, predicted = torch.max(output, 1)
-#     return predicted
-#
-#
-# def imshow(img):
-#     # unnormalize
-#     npimg = img.numpy()
-#     plt.imshow(np.transpose(npimg, (1, 2, 0)))
-#     plt.show()
-#
-#
-# net = Net()
-# net.load_state_dict(torch.load("model.pth"))
-# dataiter = iter(testloader)
-# classes = ('0', '1')
-# while True:
-#     image, _ = dataiter.next()
-#     predicted = classify(image)
-#     print(' Predicted: ' + classes[predicted])
-#     imshow(torchvision.utils.make_grid(image))
+torch.save(model.state_dict(), "label_defective_region.pth")
