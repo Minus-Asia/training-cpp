@@ -65,12 +65,7 @@ if __name__ == '__main__':
                 im_good = cv2.bitwise_and(temp_mask_inv, im_good)
                 im_good = cv2.bitwise_or(cropped_img, im_good)
 
-        cv2.imshow("img", black_mask)
-        cv2.imshow("img2", im_good)
-        cv2.waitKey(0)
-        break
-
-        # current_num = len(os.listdir(output_dir))
-        # cv2.imwrite(os.path.join(output_dir, f"{str(current_num).zfill(4)}.png"), im_good)
-        # cv2.imwrite(os.path.join(output_dir, f"{str(current_num).zfill(4)}_mask.png"), black_mask)
+        current_num = len(os.listdir(output_dir))
+        cv2.imwrite(os.path.join(output_dir, f"{str(current_num).zfill(4)}.png"), im_good)
+        cv2.imwrite(os.path.join(output_dir, f"{str(current_num).zfill(4)}_mask.png"), black_mask)
 
